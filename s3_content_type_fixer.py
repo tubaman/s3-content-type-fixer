@@ -73,17 +73,17 @@ def main():
         p = multiprocessing.Process(target=check_headers, args=(bucket, queue, args.verbose),)
         p.start()
         processes.append(p)
+    
+    # Add the items to the queue
+    for key in find_matching_files(bucket, args.prefixes):
+        queue.put(key.name)
+
+    # Add None's to the end of the queue, which acts as a signal for the
+    # proceses to finish
+    for _ in xrange(args.workers):
+        queue.put(None)
 
     for p in processes:
-        # Add the items to the queue
-        for key in find_matching_files(bucket, args.prefixes):
-            queue.put(key.name)
-
-        # Add None's to the end of the queue, which acts as a signal for the
-        # proceses to finish
-        for _ in xrange(args.workers):
-            queue.put(None)
-
         # Wait for the processes to finish
         try:
             p.join()
