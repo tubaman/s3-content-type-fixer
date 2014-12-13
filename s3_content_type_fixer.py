@@ -51,7 +51,10 @@ def check_headers(bucket, queue, verbose):
                 print "%s: Matches expected content type" % key.name
         else:
             print "%s: Current content type (%s) does not match expected (%s); fixing" % (key.name, content_type, expected_content_type)
-            key.copy(key.bucket, key.name, preserve_acl=True, metadata={'Content-Type': expected_content_type, 'Content-Disposition': key.content_disposition})
+            metadata = {'Content-Type': expected_content_type}
+            if key.content_disposition is not None:
+                metadata['Content-Disposition'] = key.content_disposition
+            key.copy(key.bucket, key.name, preserve_acl=True, metadata=metadata)
 
 def main():
     parser = argparse.ArgumentParser(description="Fixes the content-type of assets on S3")
